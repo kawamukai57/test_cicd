@@ -1,0 +1,15 @@
+# URL
+https://qiita.com/panpanman/items/a4571d4eef1ef3b55b0f
+https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
+https://blog.nnasaki.com/entry/kubernetes2-advent-calendar-2017-12-22
+
+# Create a resource group
+az group create --name rg-kawamukai --location japaneast
+
+# Create a container registry
+az acr create --resource-group rg-kawamukai --name acrkawamukai --sku Basic
+
+# Create a Kubernetes cluster
+az provider register -n Microsoft.ContainerService
+az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --generate-ssh-keys
+az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
