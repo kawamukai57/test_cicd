@@ -1,15 +1,23 @@
-# URL
+# 参考URL
 https://qiita.com/panpanman/items/a4571d4eef1ef3b55b0f
-https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
 https://blog.nnasaki.com/entry/kubernetes2-advent-calendar-2017-12-22
 
-# Create a resource group
+# ACRとAKSクラスタの構築
 az group create --name rg-kawamukai --location japaneast
-
-# Create a container registry
 az acr create --resource-group rg-kawamukai --name acrkawamukai --sku Basic
-
-# Create a Kubernetes cluster
 az provider register -n Microsoft.ContainerService
-az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --generate-ssh-keys
+az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --node-vm-size B1s --generate-ssh-keys
 az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
+
+# パイプラインの構築
+https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
+
+# Self-hosted 環境の構築
+- Azure Portalで Linux VM を作成
+- クライアントから VM に接続
+  - SSHキーをローカルにダウンロード（~/.ssh/kawamukai/vm-kawamukai_key に配置）
+  - Git Bashを開く
+  - chmod 400 ~/.ssh/kawamukai/vm-kawamukai_key
+  - ssh -i ~/.ssh/kawamukai/vm-kawamukai_key kawamukai@52.253.105.170
+- 以下、手順を参考に構築
+  - https://qiita.com/akiojin/items/ef9226b430ef73806b78
