@@ -39,25 +39,37 @@ https://blog.nnasaki.com/entry/kubernetes2-advent-calendar-2017-12-22
   - 3. Azure DevOps 上で agent が登録されていることを確認
 
 
-# Azure CLI と kubectl のインストール
+# 必要モジュールのインストール
 - Azure 上の Linux VM で以下を実行（もしくは、Azure Portal で Cloud Shell を開き、以下を実行）
-sudo apt remove azure-cli -y && sudo apt autoremove -y
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-az --version
-curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin/kubectl
-kubectl version --client
-az login
+  - Azure CLI
+    - sudo apt remove azure-cli -y && sudo apt autoremove -y
+    - curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    - az --version
+  - kubectl
+    - curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+    - chmod +x ./kubectl
+    - sudo mv ./kubectl /usr/local/bin/kubectl
+    - kubectl version --client
+  - Docker
+    - sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    - sudo apt-get update
+    - sudo apt-get install docker-ce
+    - docker --version
+
 
 
 # ACRとAKSクラスタの構築
+az login
 az group create --name rg-kawamukai --location japaneast
 az acr create --resource-group rg-kawamukai --name acrkawamukai --sku Basic
 az provider register -n Microsoft.ContainerService
 az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --node-vm-size standard_B2s --generate-ssh-keys
 az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
 kubectl get all
+systemctl status docker &
+az acr login -n acrkawamukai
 
 
 # パイプラインの構築
