@@ -2,16 +2,6 @@
 https://qiita.com/panpanman/items/a4571d4eef1ef3b55b0f
 https://blog.nnasaki.com/entry/kubernetes2-advent-calendar-2017-12-22
 
-# ACRとAKSクラスタの構築
-az group create --name rg-kawamukai --location japaneast
-az acr create --resource-group rg-kawamukai --name acrkawamukai --sku Basic
-az provider register -n Microsoft.ContainerService
-az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --node-vm-size B1s --generate-ssh-keys
-az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
-
-# パイプラインの構築
-- 以下の手順を参考に構築
-- https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
 
 # Self-hosted 環境の構築
 - 参考URL
@@ -20,13 +10,14 @@ az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
  - Azure DevOps で Self-hosted 環境を構築する方法
    - https://qiita.com/akiojin/items/ef9226b430ef73806b78
 - Azure Portalで Linux VM を作成
+   - OS: Ubuntu 20.4
+   - VmSize: B1ls
 - クライアントから VM に接続
   - SSHキーをローカルにダウンロード（~/.ssh/kawamukai/vm-kawamukai_key に配置）
   - Git Bashを開く
   - chmod 400 ~/.ssh/kawamukai/vm-kawamukai_key.pem
   - ssh -i ~/.ssh/kawamukai/vm-kawamukai_key.pem kawamukai@52.253.105.170
-- 以下、手順を参考に構築
-  - https://qiita.com/akiojin/items/ef9226b430ef73806b78
+- 右記のURLを参考に構築（https://qiita.com/akiojin/items/ef9226b430ef73806b78）
   - 1. Personal Access Tokens (PAT) の取得
   - 2. エージェントの登録
     -  Azure 上の Linux VM で ディレクトリ作成
@@ -46,3 +37,32 @@ az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
         - agent name : vm-kawamukai
         - work folder: _work
   - 3. Azure DevOps 上で agent が登録されていることを確認
+
+
+# Azure CLI と kubectl のインストール
+- Azure 上の Linux VM で以下を実行（もしくは、Azure Portal で Cloud Shell を開き、以下を実行）
+sudo apt remove azure-cli -y && sudo apt autoremove -y
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+az --version
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+kubectl version --client
+az login
+
+
+# ACRとAKSクラスタの構築
+az group create --name rg-kawamukai --location japaneast
+az acr create --resource-group rg-kawamukai --name acrkawamukai --sku Basic
+az provider register -n Microsoft.ContainerService
+az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count 1 --node-vm-size standard_B2s --generate-ssh-keys
+az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
+kubectl get all
+
+
+# パイプラインの構築
+- 右記のURLを参考に構築（https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml）
+  - 1. コードを取得する
+    - https://github.com/MicrosoftDocs/pipelines-javascript-docker # azure-pipelines.ymlは削除しておく
+  - 2. パイプラインを作成する
+  - 3. アプリがデプロイされていることを確認する
