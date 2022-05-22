@@ -10,14 +10,39 @@ az aks create --resource-group rg-kawamukai --name clusterkawamukai --node-count
 az aks get-credentials --resource-group rg-kawamukai --name clusterkawamukai
 
 # パイプラインの構築
-https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
+- 以下の手順を参考に構築
+- https://docs.microsoft.com/ja-jp/azure/aks/devops-pipeline?pivots=pipelines-yaml
 
 # Self-hosted 環境の構築
+- 参考URL
+ - MS-hosted と Self-hosted の違い
+   - https://qiita.com/akiojin/items/1fb2d516399967c183bf
+ - Azure DevOps で Self-hosted 環境を構築する方法
+   - https://qiita.com/akiojin/items/ef9226b430ef73806b78
 - Azure Portalで Linux VM を作成
 - クライアントから VM に接続
   - SSHキーをローカルにダウンロード（~/.ssh/kawamukai/vm-kawamukai_key に配置）
   - Git Bashを開く
-  - chmod 400 ~/.ssh/kawamukai/vm-kawamukai_key
-  - ssh -i ~/.ssh/kawamukai/vm-kawamukai_key kawamukai@52.253.105.170
+  - chmod 400 ~/.ssh/kawamukai/vm-kawamukai_key.pem
+  - ssh -i ~/.ssh/kawamukai/vm-kawamukai_key.pem kawamukai@52.253.105.170
 - 以下、手順を参考に構築
   - https://qiita.com/akiojin/items/ef9226b430ef73806b78
+  - 1. Personal Access Tokens (PAT) の取得
+  - 2. エージェントの登録
+    -  Azure 上の Linux VM で ディレクトリ作成
+      - mkdir myagent
+      - exit
+    - ローカルの GitBash から Azure 上の VM に SCP でエージェント登録用の tarball を転送
+      - scp -i ~/.ssh/kawamukai/vm-kawamukai_key.pem ~/Downloads/vsts-agent-linux-x64-2.204.0.tar.gz kawamukai@52.253.105.170:/home/kawamukai/myagent
+    - Azure 上の Linux VM で下記コマンド実行
+      - cd myagent
+      - tar zxvf ~/myagent/vsts-agent-linux-x64-2.204.0.tar.gz
+      - ./config.sh # 以下の項目を入力
+        - Accept the Team Explorer Everywhere license agreement now? : N
+        - Server URL：https://dev.azure.com/kawaken429
+        - authentication type: PAT
+        - PAT：${1で作成したPAT}}
+        - agentpool: aks_cicd agent
+        - agent name : vm-kawamukai
+        - work folder: _work
+  - 3. Azure DevOps 上で agent が登録されていることを確認
